@@ -13,33 +13,59 @@
             background: radial-gradient(circle at 50% 0%, #2e1065 0%, #0b0e14 70%);
         }
         .sidebar-item:hover { background: rgba(124, 58, 237, 0.1); color: #a78bfa; }
-        .sidebar-active { background: rgba(124, 58, 237, 0.2); border-right: 3px solid #7c3aed; color: white; }
+        .sidebar-active { background: rgba(124, 58, 237, 0.2); border-right: 3px solid #7c3aed; color: white !important; }
+        
+        /* Mobile Bottom Nav Styles */
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6B7280;
+            transition: all 0.2s;
+        }
+        .mobile-nav-active {
+            color: #7c3aed;
+        }
+
         .draft-card { border: 2px dashed rgba(124, 58, 237, 0.3); transition: all 0.2s; }
         .draft-card:hover { border-color: #7c3aed; background: rgba(124, 58, 237, 0.05); }
+        
+        .empty-state-card {
+            background: #151921;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Hide Scrollbar for cleaner UI */
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="mesh-gradient min-h-screen">
+<body class="mesh-gradient min-h-screen pb-20 md:pb-0">
 
     <div id="dashboard-section" class="flex min-h-screen">
-        <!-- Sidebar -->
+        <!-- Desktop Sidebar (Hidden on Mobile) -->
         <aside class="w-64 border-r border-gray-800/50 flex flex-col p-6 hidden md:flex bg-[#0B0E14]">
             <div class="flex items-center gap-3 mb-10 px-2">
                 <div class="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center shadow-lg shadow-violet-900/40">
                     <i data-lucide="zap" class="text-white w-5 h-5 fill-current"></i>
                 </div>
-                <span class="font-bold text-sm tracking-tight">AI ContentPilot</span>
+                <span class="font-bold text-sm tracking-tight">AICONTENTPILOT</span>
             </div>
             <nav class="space-y-1">
-                <a href="#" class="sidebar-item sidebar-active flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
+                <a href="dashboard.html" class="sidebar-item sidebar-active flex items-center gap-3 p-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
                     <i data-lucide="home" class="w-4 h-4"></i> Feed
                 </a>
-                <a href="#" class="sidebar-item flex items-center gap-3 p-3 rounded-xl text-xs font-bold text-gray-500 uppercase tracking-wider transition-all">
+                <a href="create.html" class="sidebar-item flex items-center gap-3 p-3 rounded-xl text-xs font-bold text-gray-500 uppercase tracking-wider transition-all">
                     <i data-lucide="plus-square" class="w-4 h-4"></i> Create
                 </a>
-                <a href="#" class="sidebar-item flex items-center gap-3 p-3 rounded-xl text-xs font-bold text-gray-500 uppercase tracking-wider transition-all">
+                <a href="scheduler.html" class="sidebar-item flex items-center gap-3 p-3 rounded-xl text-xs font-bold text-gray-500 uppercase tracking-wider transition-all">
                     <i data-lucide="calendar" class="w-4 h-4"></i> Scheduler
                 </a>
-                <a href="#" class="sidebar-item flex items-center gap-3 p-3 rounded-xl text-xs font-bold text-gray-500 uppercase tracking-wider transition-all">
+                <a href="analytics.html" class="sidebar-item flex items-center gap-3 p-3 rounded-xl text-xs font-bold text-gray-500 uppercase tracking-wider transition-all">
                     <i data-lucide="bar-chart-2" class="w-4 h-4"></i> Analytics
                 </a>
             </nav>
@@ -51,39 +77,67 @@
                 <!-- Header -->
                 <div class="flex justify-between items-center mb-10">
                     <div>
-                        <p class="text-gray-500 text-[10px] uppercase font-bold tracking-[0.2em] mb-1"></p>
-                        <h1 class="text-4xl font-bold tracking-tight">Hey <span id="user-name-display" class="text-violet-400">User</span> 👋</h1>
+                        <h1 class="text-3xl md:text-4xl font-bold tracking-tight">Hey <span id="user-name-display" class="text-violet-400">User</span> 👋</h1>
                     </div>
-                    <button class="bg-violet-600 text-white px-6 py-2.5 rounded-full font-bold text-xs flex items-center gap-2 hover:bg-violet-500 shadow-lg shadow-violet-900/20 transition-all uppercase tracking-widest">
+                    <a href="create.html" class="bg-violet-600 text-white px-5 py-2 md:px-6 md:py-2.5 rounded-full font-bold text-[10px] md:text-xs flex items-center gap-2 hover:bg-violet-500 shadow-lg shadow-violet-900/20 transition-all uppercase tracking-widest">
                         <i data-lucide="plus" class="w-4 h-4"></i> New
-                    </button>
+                    </a>
                 </div>
 
                 <!-- Drafts Section -->
                 <div class="mb-14">
                     <p class="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-5">Drafts</p>
                     <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-5">
-                        <div class="draft-card rounded-2xl aspect-[3/4.5] flex flex-col items-center justify-center cursor-pointer group">
+                        <div onclick="window.location.href='create.html'" class="draft-card rounded-2xl aspect-[3/4.5] flex flex-col items-center justify-center cursor-pointer group">
                             <i data-lucide="plus" class="w-8 h-8 text-gray-700 group-hover:text-violet-400 mb-2 transition-colors"></i>
                             <span class="text-[10px] font-bold text-gray-600 uppercase tracking-widest group-hover:text-violet-400">New draft</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Feed Section / Empty State -->
+                <div class="mb-14">
+                    <div class="empty-state-card rounded-[24px] py-16 px-6 flex flex-col items-center justify-center text-center max-w-3xl mx-auto">
+                        <h2 class="text-3xl md:text-4xl font-bold text-white mb-2 tracking-tight">Empty for now.</h2>
+                        <p class="text-gray-400 text-sm md:text-base mb-8 font-medium">Create your first AI-generated post.</p>
+                        <button onclick="window.location.href='create.html'" class="bg-[#00E5FF] hover:bg-[#00D1EB] text-black font-bold py-3.5 px-10 rounded-xl text-sm transition-all active:scale-95 shadow-[0_0_25px_rgba(0,229,255,0.2)]">
+                            Generate your first reel
+                        </button>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
+    <!-- Persistent Mobile Bottom Navigation -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-[#0B0E14]/90 backdrop-blur-xl border-t border-gray-800 flex justify-around items-center py-4 px-2 z-50">
+        <a href="dashboard.html" class="mobile-nav-item mobile-nav-active">
+            <i data-lucide="home" class="w-6 h-6 mb-1"></i>
+            <span>Feed</span>
+        </a>
+        <a href="create.html" class="mobile-nav-item">
+            <i data-lucide="plus-square" class="w-6 h-6 mb-1"></i>
+            <span>Create</span>
+        </a>
+        <a href="scheduler.html" class="mobile-nav-item">
+            <i data-lucide="calendar" class="w-6 h-6 mb-1"></i>
+            <span>Schedule</span>
+        </a>
+        <a href="analytics.html" class="mobile-nav-item">
+            <i data-lucide="bar-chart-2" class="w-6 h-6 mb-1"></i>
+            <span>Data</span>
+        </a>
+    </nav>
+
     <script>
-        // Redirect if no session found
+        // Authentication & Session logic
         const userName = localStorage.getItem('activeSession');
         if (!userName) {
             window.location.href = 'index.html';
         } else {
-            // Format name: Capitalize first letter of every word
             const formattedName = userName.split(' ')
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
                 .join(' ');
-            
             document.getElementById('user-name-display').innerText = formattedName;
         }
 
