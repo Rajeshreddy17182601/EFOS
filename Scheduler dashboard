@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI ContentPilot - Scheduler</title>
+    <title>AI ContentPilot - Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { 
@@ -17,52 +18,43 @@
         .mesh-gradient {
             background: radial-gradient(circle at 50% 0%, #2e1065 0%, #0b0e14 70%);
         }
-        /* Reduced calendar size */
-        .calendar-card {
+        .stat-card {
             background: #151921;
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 24px;
-            max-width: 400px; /* Constrained width */
-            margin: 0 auto;
+            transition: all 0.3s ease;
         }
-        .info-card {
-            background: #151921;
+        .stat-card:hover {
+            border-color: rgba(124, 58, 237, 0.3);
+            transform: translateY(-2px);
+        }
+        .suggestion-item {
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-        }
-        .day-label {
-            color: #6B7280;
-            font-size: 11px;
-            font-weight: 600;
-        }
-        .calendar-day {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            cursor: pointer;
-            border-radius: 10px;
-            transition: all 0.2s;
-        }
-        .calendar-day:hover:not(.empty) {
-            background: rgba(124, 58, 237, 0.2);
-        }
-        .calendar-day.active {
-            background: white;
-            color: black;
-            font-weight: 700;
-        }
-        .calendar-day.selected {
-            background: #7c3aed;
-            color: white;
-        }
-        .calendar-day.muted {
-            color: #374151;
+            border-radius: 16px;
+            padding: 1.25rem;
         }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0B0E14; }
         ::-webkit-scrollbar-thumb { background: #1F2937; border-radius: 10px; }
+
+        
+        /* Mobile Bottom Nav Styles */
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6B7280;
+            transition: all 0.2s;
+        }
+        .mobile-nav-active {
+            color: #7c3aed;
+        }
     </style>
 </head>
 <body class="mesh-gradient min-h-screen">
@@ -74,7 +66,7 @@
                 <div class="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center shadow-lg shadow-violet-900/40">
                     <i data-lucide="zap" class="text-white w-5 h-5 fill-current"></i>
                 </div>
-                <span class="font-bold text-sm tracking-tight uppercase">AI ContentPilot</span>
+                <span class="font-bold text-sm tracking-tight uppercase text-white">AI ContentPilot</span>
             </div>
             <nav class="space-y-1">
                 <a href="dashboard.html" class="flex items-center gap-3 p-3 rounded-xl text-xs font-bold text-gray-500 uppercase tracking-wider hover:bg-white/5 transition-all">
@@ -83,11 +75,10 @@
                 <a href="create.html" class="flex items-center gap-3 p-3 rounded-xl text-xs font-bold text-gray-500 uppercase tracking-wider hover:bg-white/5 transition-all">
                     <i data-lucide="plus-square" class="w-4 h-4"></i> Create
                 </a>
-                <a href="#" class="flex items-center gap-3 p-3 rounded-xl text-xs font-bold text-white uppercase tracking-wider transition-all" style="background: rgba(124, 58, 237, 0.2); border-right: 3px solid #7c3aed;">
+                <a href="scheduler.html" class="flex items-center gap-3 p-3 rounded-xl text-xs font-bold text-gray-500 uppercase tracking-wider hover:bg-white/5 transition-all">
                     <i data-lucide="calendar" class="w-4 h-4"></i> Scheduler
                 </a>
-                <!-- Corrected Redirect Link -->
-                <a href="analytics.html" class="flex items-center gap-3 p-3 rounded-xl text-xs font-bold text-gray-500 uppercase tracking-wider hover:bg-white/5 transition-all">
+                <a href="analytics.html" class="flex items-center gap-3 p-3 rounded-xl text-xs font-bold text-white uppercase tracking-wider transition-all" style="background: rgba(124, 58, 237, 0.2); border-right: 3px solid #7c3aed;">
                     <i data-lucide="bar-chart-2" class="w-4 h-4"></i> Analytics
                 </a>
             </nav>
@@ -95,120 +86,183 @@
 
         <!-- Main Content -->
         <main class="flex-1 p-6 md:p-12 overflow-y-auto">
-            <div class="max-w-xl mx-auto">
-                
-                <header class="mb-10 text-center">
-                    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight mb-4">
-                        Content <span class="">calendar</span>
-                    </h1>
+            <div class="max-w-4xl mx-auto">
+                <header class="mb-10">
+
+                    <h1 class="text-5xl font-extrabold tracking-tight mb-4">Analytics</h1>
+                    <p class="text-gray-400 text-lg max-w-xl">Cross-platform metrics and AI suggestions to ship smarter.</p>
                 </header>
 
-                <!-- Calendar Card -->
-                <div class="calendar-card p-6 mb-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <button class="p-2 hover:bg-white/5 rounded-lg transition-colors"><i data-lucide="chevron-left" class="w-4 h-4 text-gray-400"></i></button>
-                        <h2 class="font-bold text-md">May 2026</h2>
-                        <button class="p-2 hover:bg-white/5 rounded-lg transition-colors"><i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i></button>
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <!-- Views -->
+                    <div class="stat-card p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <i data-lucide="eye" class="w-5 h-5 text-cyan-400"></i>
+                            <span class="text-emerald-400 text-[10px] font-bold flex items-center"><i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> 12%</span>
+                        </div>
+                        <h3 class="text-3xl font-extrabold mb-1">2.4k</h3>
+                        <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Views</p>
                     </div>
-
-                    <div class="grid grid-cols-7 gap-1 mb-2 text-center">
-                        <div class="day-label">Su</div>
-                        <div class="day-label">Mo</div>
-                        <div class="day-label">Tu</div>
-                        <div class="day-label">We</div>
-                        <div class="day-label">Th</div>
-                        <div class="day-label">Fr</div>
-                        <div class="day-label">Sa</div>
+                    <!-- Likes -->
+                    <div class="stat-card p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <i data-lucide="heart" class="w-5 h-5 text-pink-500"></i>
+                            <span class="text-emerald-400 text-[10px] font-bold flex items-center"><i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> 8%</span>
+                        </div>
+                        <h3 class="text-3xl font-extrabold mb-1">842</h3>
+                        <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Likes</p>
                     </div>
-
-                    <div class="grid grid-cols-7 gap-1 text-center" id="calendar-grid">
-                        <div class="calendar-day muted">26</div>
-                        <div class="calendar-day muted">27</div>
-                        <div class="calendar-day muted">28</div>
-                        <div class="calendar-day muted">29</div>
-                        <div class="calendar-day muted">30</div>
-                        <div class="calendar-day">1</div>
-                        <div class="calendar-day active" data-date="2026-05-02">2</div>
-                        <div class="calendar-day" data-date="2026-05-03">3</div>
-                        <div class="calendar-day" data-date="2026-05-04">4</div>
-                        <div class="calendar-day" data-date="2026-05-05">5</div>
-                        <div class="calendar-day" data-date="2026-05-06">6</div>
-                        <div class="calendar-day" data-date="2026-05-07">7</div>
-                        <div class="calendar-day" data-date="2026-05-08">8</div>
-                        <div class="calendar-day" data-date="2026-05-09">9</div>
-                        <div class="calendar-day" data-date="2026-05-10">10</div>
-                        <div class="calendar-day" data-date="2026-05-11">11</div>
-                        <div class="calendar-day" data-date="2026-05-12">12</div>
-                        <div class="calendar-day" data-date="2026-05-13">13</div>
-                        <div class="calendar-day" data-date="2026-05-14">14</div>
-                        <div class="calendar-day" data-date="2026-05-15">15</div>
-                        <div class="calendar-day" data-date="2026-05-16">16</div>
+                    <!-- Comments -->
+                    <div class="stat-card p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <i data-lucide="message-circle" class="w-5 h-5 text-violet-400"></i>
+                            <span class="text-emerald-400 text-[10px] font-bold flex items-center"><i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> 5%</span>
+                        </div>
+                        <h3 class="text-3xl font-extrabold mb-1">128</h3>
+                        <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Comments</p>
                     </div>
-
-                    <!-- Date Selection / Submit -->
-                    <div class="mt-6 pt-6 border-t border-white/5">
-                        <button onclick="submitSchedule()" class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 rounded-xl transition-all active:scale-95 uppercase text-[10px] tracking-widest">
-                            Submit Schedule
-                        </button>
+                    <!-- Shares -->
+                    <div class="stat-card p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <i data-lucide="share-2" class="w-5 h-5 text-blue-400"></i>
+                            <span class="text-emerald-400 text-[10px] font-bold flex items-center"><i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> 14%</span>
+                        </div>
+                        <h3 class="text-3xl font-extrabold mb-1">56</h3>
+                        <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Shares</p>
                     </div>
                 </div>
 
-                <!-- Posts Queued Card -->
-                <div class="info-card p-8">
-                    <div class="w-10 h-10 rounded-xl border border-cyan-400/30 flex items-center justify-center mb-6 text-cyan-400">
-                        <i data-lucide="calendar-check" class="w-5 h-5"></i>
+                <!-- Views Trend Chart -->
+                <div class="stat-card p-8 mb-8">
+                    <div class="flex justify-between items-center mb-8">
+                        <div>
+                            <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Last 7 Days</p>
+                            <h2 class="text-2xl font-bold">Views trend</h2>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-cyan-400 font-bold text-lg">3.2%</span>
+                            <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">engagement</p>
+                        </div>
                     </div>
-                    <h3 class="text-2xl font-extrabold mb-2">0 posts queued</h3>
-                    <p class="text-gray-400 text-sm mb-8">Open drafts from Feed to schedule them.</p>
-                    
-                    <a href="create.html" class="block w-full bg-white text-center text-black font-bold py-4 rounded-2xl hover:bg-gray-200 transition-all active:scale-[0.98] uppercase text-xs tracking-widest">
-                        Create new content
-                    </a>
+                    <div class="h-[250px] w-full">
+                        <canvas id="viewsChart"></canvas>
+                    </div>
                 </div>
 
+                <!-- Platform Breakdown -->
+                <div class="stat-card p-8 mb-8">
+                    <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-6">By Platform</p>
+                    <div class="flex flex-col items-center py-10">
+                        <p class="text-gray-400 font-medium">Publish a post to see breakdown.</p>
+                    </div>
+                </div>
+
+                <!-- AI Suggestions -->
+                <div class="stat-card p-8 mb-20">
+                    <div class="flex items-center gap-2 mb-6">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-cyan-400"></i>
+                        <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">AI Suggestions</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="suggestion-item">
+                            <p class="text-sm leading-relaxed text-gray-200">Post vertical videos between <span class="text-violet-400 font-bold">7-9 PM</span> for 2.3x more reach.</p>
+                        </div>
+                        <div class="suggestion-item">
+                            <p class="text-sm leading-relaxed text-gray-200">Captions under <span class="text-violet-400 font-bold">125 chars</span> get 28% higher completion on Reels.</p>
+                        </div>
+                        <div class="suggestion-item">
+                            <p class="text-sm leading-relaxed text-gray-200">Use <span class="text-violet-400 font-bold">8-12 hashtags</span> — more than 15 reduces discovery.</p>
+                        </div>
+                        <div class="suggestion-item">
+                            <p class="text-sm leading-relaxed text-gray-200">Add <span class="text-violet-400 font-bold">subtitles</span> — 85% of viewers watch muted.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- Mobile Navigation with Analytics Redirect -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-[#0B0E14] border-t border-gray-800 px-6 py-4 flex justify-between items-center z-50">
-        <a href="dashboard.html" class="flex flex-col items-center gap-1 text-gray-500">
-            <i data-lucide="home" class="w-5 h-5"></i>
-            <span class="text-[10px] font-bold uppercase">Feed</span>
+    <!-- Persistent Mobile Bottom Navigation -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-[#0B0E14]/90 backdrop-blur-xl border-t border-gray-800 flex justify-around items-center py-4 px-2 z-50">
+        <a href="dashboard.html" class="mobile-nav-item">
+            <i data-lucide="home" class="w-6 h-6 mb-1"></i>
+            <span>Feed</span>
         </a>
-        <a href="create.html" class="flex flex-col items-center gap-1 text-gray-500">
-            <i data-lucide="plus-square" class="w-5 h-5"></i>
-            <span class="text-[10px] font-bold uppercase">Create</span>
+        <a href="create.html" class="mobile-nav-item mobile-nav-active">
+            <i data-lucide="plus-square" class="w-6 h-6 mb-1"></i>
+            <span>Create</span>
         </a>
-        <a href="scheduler.html" class="flex flex-col items-center gap-1 text-white">
-            <i data-lucide="calendar" class="w-5 h-5"></i>
-            <span class="text-[10px] font-bold uppercase">Scheduler</span>
+        <a href="scheduler.html" class="mobile-nav-item">
+            <i data-lucide="calendar" class="w-6 h-6 mb-1"></i>
+            <span>Schedule</span>
         </a>
-        <a href="analytics.html" class="flex flex-col items-center gap-1 text-gray-500">
-            <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
-            <span class="text-[10px] font-bold uppercase">Analytics</span>
+        <a href="analytics.html" class="mobile-nav-item">
+            <i data-lucide="bar-chart-2" class="w-6 h-6 mb-1"></i>
+            <span>Data</span>
         </a>
-    </div>
-
+    </nav>
     <script>
         lucide.createIcons();
 
-        // Handle Date Selection
-        const days = document.querySelectorAll('.calendar-day:not(.muted)');
-        days.forEach(day => {
-            day.addEventListener('click', () => {
-                day.classList.toggle('selected');
-            });
-        });
+        // Chart Configuration
+        const ctx = document.getElementById('viewsChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+        gradient.addColorStop(0, 'rgba(34, 211, 238, 0.2)');
+        gradient.addColorStop(1, 'rgba(34, 211, 238, 0)');
 
-        function submitSchedule() {
-            const selected = document.querySelectorAll('.calendar-day.selected');
-            if(selected.length > 0) {
-                alert(`Scheduled for ${selected.length} day(s)`);
-            } else {
-                alert('Please select at least one date.');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                datasets: [{
+                    label: 'Views',
+                    data: [800, 580, 750, 659, 300, 300, 700],
+                    borderColor: '#22d3ee',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#22d3ee',
+                    pointBorderColor: '#0B0E14',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: gradient,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#151921',
+                        titleColor: '#9CA3AF',
+                        bodyColor: '#22d3ee',
+                        bodyFont: { weight: 'bold', size: 14 },
+                        padding: 12,
+                        cornerRadius: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return 'views : ' + context.parsed.y;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { color: '#4B5563', font: { family: 'Plus Jakarta Sans', weight: 'bold' } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
+                        ticks: { color: '#4B5563', font: { family: 'Plus Jakarta Sans' }, stepSize: 200 }
+                    }
+                }
             }
-        }
+        });
     </script>
 </body>
 </html>
